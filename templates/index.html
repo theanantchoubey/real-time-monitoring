@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error and Secure Entry Monitoring</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #101010;
+      color: aqua;
+    }
+
+    .topbar {
+      position: sticky !important;
+    }
+
+    #logContainer {
+      color: #00FF00;
+      background-color: #1e1e1e;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 10px;
+      overflow-y: auto;
+      max-height: 70vh;
+    }
+
+    h1 {
+      text-align: center;
+      color: aqua;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      word-wrap: break-word;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+
+    .error {
+      color: #FF0000;
+    }
+
+    .terminal-icon {
+      color: #FFD700;
+    }
+
+    #logCount {
+      color: #FFD700;
+    }
+
+    #logContainer::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #logContainer::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+
+    #logContainer::-webkit-scrollbar-thumb {
+      background-color: #FFD700;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+
+    <h1>Error and Secure Entry Monitoring</h1>
+    <h2>Log Entries: <span id="logCount">0</span></h2>
+  </div>
+  <div id="logContainer">
+    <ul id="logList"></ul>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('log_data', (data) => {
+      const logContainer = document.getElementById('logContainer');
+
+      const logList = document.getElementById('logList');
+      const logCount = document.getElementById('logCount');
+      logList.innerHTML = '';
+
+      data.logs.forEach((entry) => {
+        const entryClass = entry.type === 'secure' ? 'secure' : 'error';
+        const entryName = entryClass === 'secure' ? 'secure ✅' : 'error ❌';
+        logList.innerHTML += `<li class="${entryClass}"><span class="terminal-icon">$</span> <b>${entryName.toUpperCase()} - </b> ${entry.ip_address} - - [${entry.timestamp}] "${entry.request}" ${entry.http_response_code}</li>`;
+      });
+      logCount.textContent = data.logs.length;
+      logContainer.scrollTo({
+        top: logContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+
+    });
+  </script>
+</body>
+
+</html>
